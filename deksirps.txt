@@ -1,0 +1,50 @@
+Apotik Pintar adalah aplikasi manajemen apotek/klinik yang mencakup seluruh alur operasional harian: penjualan di kasir (POS), pengelolaan stok obat dengan sistem batch & FEFO (First Expired First Out), pembelian ke supplier, resep dokter, keuangan, hingga laporan lengkap. Dibangun sepenuhnya dengan PHP Native custom MVC tanpa framework seperti Laravel/CodeIgniter dan tanpa Node.js di backend cocok untuk kebutuhan satu apotek/klinik single-deployment (bukan produk SaaS, tanpa multi-tenant, tanpa skema langganan). Setiap perubahan stok tercatat sebagai kartu stok (stock ledger) sehingga riwayatnya bisa ditelusuri, dan modul kasir (POS) tetap bisa dipakai transaksi walau koneksi internet/server sedang terputus (mode offline dengan IndexedDB) transaksi yang tertunda otomatis disinkronkan ulang begitu koneksi kembali, lengkap dengan validasi ulang stok di server agar data tidak pernah tertimpa diam-diam. Mencakup dashboard real-time, manajemen resep, hutang-piutang, cetak barcode & label obat, backup database dari UI, hingga panel role & permission granular untuk membedakan akses Kasir, Apoteker, Gudang, Owner, dan Super Admin.
+Cara kerja
+Admin/Owner login ke sistem lalu mendata master obat berikut kategori, jenis, golongan, satuan, produsen, dan rak penyimpanannya. Setiap kali ada barang masuk, admin/gudang membuat batch baru per obat (nomor batch, tanggal kadaluarsa, harga beli) lewat modul Pembelian/Penerimaan Barang sistem otomatis mencatat pergerakan stok masuk ke stock ledger. Saat transaksi di kasir (POS), kasir mencari obat via nama atau scan barcode, sistem otomatis mengalokasikan stok dari batch dengan tanggal kadaluarsa terdekat (FEFO) tanpa perlu kasir memilih batch manual, lalu memproses pembayaran (tunai, non-tunai, atau sebagian sebagai piutang) dan mencetak struk. Untuk transaksi berbasis resep dokter, alurnya melalui status draft → menunggu verifikasi → diverifikasi apoteker → diproses → selesai, dengan jejak siapa yang menginput dan siapa yang memverifikasi. Semua mutasi stok (penjualan, retur, pembelian, retur pembelian, opname, penyesuaian manual) berjalan lewat satu jalur pencatatan yang sama sehingga kartu stok selalu akurat. Owner/Admin memantau semua ini lewat Dashboard (statistik & grafik penjualan, stok menipis, obat akan/sudah kadaluarsa, hutang-piutang) dan bisa mengambil Laporan (penjualan, pembelian, stok, laba, hutang, keuangan) kapan saja lengkap dengan export CSV. Jika koneksi ke server terputus saat kasir sedang transaksi, aplikasi tetap menerima transaksi (disimpan sementara di perangkat) dan mengirim ulang otomatis begitu koneksi pulih, sehingga operasional kasir tidak pernah berhenti karena masalah jaringan.
+Fitur
+Dashboard real-time: statistik penjualan, grafik Chart.js, widget stok menipis & akan kadaluarsa
+POS/Kasir: pencarian obat & scan barcode, keranjang, alokasi stok otomatis metode FEFO
+Pembayaran tunai/non-tunai/piutang sebagian, cetak struk langsung dari kasir
+Mode offline di kasir (PWA + IndexedDB) dengan sinkronisasi otomatis saat koneksi kembali
+Shift Kasir: buka/tutup shift dengan rekonsiliasi kas sistem vs kas aktual
+Manajemen Obat lengkap dengan konversi satuan per obat
+Batch & Kadaluarsa (FEFO) dengan ambang peringatan yang bisa dikonfigurasi
+Kartu Stok (stock ledger), Stok Opname, dan Penyesuaian Stok manual
+Generate & cetak Barcode/label obat (kode internal otomatis maupun barcode pabrik)
+Purchase Order & Pembelian ke supplier, penerimaan barang otomatis membuat batch + stok masuk
+Retur Pembelian ke supplier dan Retur Penjualan dari pelanggan
+Hutang Supplier dengan status otomatis (belum bayar/sebagian/lunas)
+Resep Dokter: alur draft → verifikasi → diproses → selesai dengan jejak audit
+Keuangan: kas masuk/keluar, pengeluaran operasional, piutang pasien, rekap arus kas
+Laporan lengkap (penjualan, pembelian, stok, kadaluarsa, retur, laba, hutang, keuangan) dengan export CSV
+Backup database manual dari panel admin (mysqldump)
+Manajemen User, Role & Permission granular (Super Admin, Owner, Apoteker, Kasir, Gudang)
+Audit Log seluruh aktivitas penting (siapa mengubah apa dan kapan)
+Notifikasi stok menipis & obat akan kadaluarsa
+Pengaturan Profil Apotek, Sistem, Persediaan, dan Printer struk
+Tampilan responsive (sidebar collapse/drawer, tabel scroll horizontal di layar kecil)
+Panduan instalasi
+Instalasi dengan XAMPP / Laragon
+Copy folder project ke lokasi manapun, misalnya C:\xampp\htdocs\apotikcare atau C:\laragon\www\apotikcare.
+Buka terminal di dalam folder project, install dependency (hanya 1 pustaka kecil untuk baca file .env, bukan framework):
+composer install
+Copy .env.example menjadi .env, sesuaikan kredensial database jika berbeda dari default XAMPP/Laragon (root tanpa password):
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=apotekcare_db
+DB_USERNAME=root
+DB_PASSWORD=
+Buat database dan jalankan migrasi + seeder data awal:
+mysql -u root -e "CREATE DATABASE apotekcare_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+php database/migrate.php
+php database/seeders/seed.php
+Penting: aplikasi ini memakai pola front-controller — semua request harus lewat folder public/, bukan folder project itu sendiri. Cara tercepat tanpa perlu konfigurasi Apache: langsung pakai PHP Built-in Server (lihat bagian di bawah). Kalau ingin pakai domain lokal sendiri di XAMPP, buat Virtual Host yang DocumentRoot-nya menunjuk ke folder public:
+<VirtualHost *:80>
+    ServerName apotekcare.local
+    DocumentRoot "C:/xampp/htdocs/apotikcare/public"
+    <Directory "C:/xampp/htdocs/apotikcare/public">
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+Tambahkan 127.0.0.1 apotekcare.local ke file hosts, restart Apache, lalu akses http://apotekcare.local.
