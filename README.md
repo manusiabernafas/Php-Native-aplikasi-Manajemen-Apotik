@@ -189,4 +189,4 @@ Barcode internal format `APO######`, dibuat hanya atas aksi eksplisit pengguna (
 - [x] Dashboard & notifikasi membaca data asli dari database
 - [x] PWA: manifest & service worker ter-cache; aset aplikasi network-first (update tidak tertahan cache lama)
 - [x] Responsive: sidebar collapse (desktop) & drawer (mobile), POS tetap 1 kolom nyaman di tablet/mobile, tabel scroll horizontal
-# apotik
+# Apotek Care
