@@ -165,7 +165,7 @@ Barcode internal format `APO######`, dibuat hanya atas aksi eksplisit pengguna (
 | Transaksi offline tidak tersinkron | Cek Sistem > Sinkronisasi untuk status konflik/gagal; buka DevTools > Application > IndexedDB > `apotekcare_offline` untuk lihat antrean mentah |
 | Backup gagal dibuat | Pastikan `mysqldump` terpasang dan bisa diakses user yang menjalankan PHP |
 
-## Testing Manual (checklist)
+## Testing Manual (-checklist)
 
 - [x] Login/logout, rate limit setelah 5 percobaan gagal
 - [x] Permission backend ditegakkan (bukan cuma UI) — dicoba dengan akun `kasir` ke `/medicines` → 403
